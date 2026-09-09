@@ -60,3 +60,40 @@ whether the stock splitkb firmware behaves the same.
 - [ ] user: check right-half VIK selector = NC, reseat both FFCs, retest on battery.
 - [ ] user: commit+push, flash debug images, capture logs (left, right, dongle).
 - [ ] if selector was already NC and log shows pinnacle errors on battery only: hypothesis 3.
+
+## Fourth report (user, 2026-09-09)
+- Today's stock firmware: left keys work (cable or not), encoder dead entirely; right half dead entirely.
+  Worse than our build, where right keys worked. Points at splitkb's 09-08 commits, or a flat right coincell.
+- Added tools/capture-log.py (stdlib) to replace screen; README updated.
+- Local branch `pre-0908` pins module 66ec164 + fork f6797e3 (parent of the two 09-08 commits). Not pushed.
+
+## Log findings (2026-09-09 21:03-21:05, debug builds)
+- LEFT half (USB): EC11 inits on P0.05/P0.04, kscan direct on P0.25 (encoder button). Split link up,
+  dongle subscribed to position + sensor CCC. Encoder produced exactly TWO edges (A then B, delta -1
+  each, both forwarded via split_peripheral_listener) then nothing more while the user kept turning.
+  No encoder-button (position 62) event at all. Battery ADC: 987 mV -> 0% (reading may be
+  meaningless while on USB; do not trust yet).
+- RIGHT half: only 0.4 s of boot captured; tool then latched onto the dongle port (bug, fixed:
+  reconnect now only adopts a NEWLY appeared port).
+- DONGLE (unintended capture): right half connects over BLE, input characteristic found and
+  subscribed, touchpad input events arrive, listener scales them (3/1) and sets HID mouse movement.
+  No USB send errors. Also spams "Failed to untrack released key -19" / "Tried to release button 0
+  too often" on every touch report: pinnacle primary-tap reports INPUT_BTN_TOUCH releases the
+  listener maps to mouse button 0. Noise, not blocking.
+- Conclusion so far: when the right half is on USB the whole chain works up to the HID report. Need
+  the dongle log with the halves on BATTERY (capture running, logs/dongle-*.log) to see whether input
+  and sensor events still arrive.
+
+## Dongle capture with BOTH halves on battery (logs/dongle-20260909-210852.log)
+- Left connects, position + sensor CCC subscribed; key presses arrive (0, 15, 16, 27, 28).
+  ZERO sensor notifications during full encoder turns; ZERO position-62 (encoder button) events.
+- Right connects, input characteristic subscribed; key presses arrive (31, 32, 33).
+  ZERO input events during touchpad use.
+- Earlier, with the right half on USB, hundreds of input events reached the dongle and became HID
+  mouse movement. With the left half on USB, the encoder produced 2 edges.
+=> modules dead on battery on BOTH halves, alive on USB. Common cause = module power on battery.
+Test: config/halcyon_elora_{left,right}.conf override EXT_POWER_DISABLE_WHEN_USB_DISCONNECTED=n +
+EXT_POWER_START=y. If modules work on battery afterwards: VIK rail depends on EXT_POWER and the
+09-08 coincell change broke modules for coincell users -> report to splitkb, keep override (maybe
+drop the orange LED from EXT_POWER control-gpios in our overlay to save battery).
+If not: voltage/hardware on battery (Pinnacle undervolt would not explain a passive encoder, though).

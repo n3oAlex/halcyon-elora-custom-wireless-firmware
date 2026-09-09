@@ -2,3 +2,4 @@
 .agents/archive/*
 !.agents/archive/.gitkeep
 .DS_Store
+logs/

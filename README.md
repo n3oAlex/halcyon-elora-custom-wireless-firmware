@@ -51,14 +51,20 @@ artifacts are the normal builds with USB logging at debug level for ZMK, the sen
 (encoder) and the input drivers (touchpad). They cost battery and the dongle debug build has no
 ZMK Studio, so flash the normal images again afterwards.
 
-1. Flash the debug image onto the part you want to inspect and press reset.
-2. Keep it connected over USB. It shows up as a serial device.
-3. Read the log and reproduce the problem (turn the encoder, press its button, touch the pad):
+1. Flash the debug image onto the part you want to inspect.
+2. Run the capture tool from the repo root. It walks you through unplugging and plugging the
+   part so it finds the right serial port, then records to `logs/<part>-<time>.log`:
 
 ```sh
-ls /dev/tty.usbmodem*
-screen /dev/tty.usbmodemXXXX 115200      # quit with ctrl-a then k
+python3 tools/capture-log.py left      # or right, or dongle
 ```
+
+3. Follow the on-screen sequence: press reset once (boot lines), wait for it to reconnect, type a
+   few keys, then use the module (turn and press the encoder, or tap and swipe the touchpad).
+4. Ctrl-C ends the capture and prints a summary. The file stays in `logs/` (gitignored).
+
+Only Python 3 is needed. If the automatic detection picks the wrong port, pass `--device`; list
+ports with `--list`.
 
 What to look for:
 
