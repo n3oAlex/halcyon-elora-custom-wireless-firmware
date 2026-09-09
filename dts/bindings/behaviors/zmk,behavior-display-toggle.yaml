@@ -1,0 +1,10 @@
+# Copyright (c) 2026 n3oAlex
+# SPDX-License-Identifier: MIT
+
+description: |
+  Switches the display (and backlight) of the part that runs it off until pressed again.
+  Global locality: reaches every half, no-op where there is no display.
+
+compatible: "zmk,behavior-display-toggle"
+
+include: zero_param.yaml

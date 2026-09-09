@@ -14,7 +14,9 @@ include:
   - board: halcyon_wireless//zmk
     shield: halcyon_elora_left mod_battery_coincell mod_display_tft
     artifact-name: halcyon_elora_left
-    cmake-args: -DCONFIG_ZMK_SPLIT_ROLE_CENTRAL=n
+    # TFT only: blank + backlight off 5 s after the last left-half key press (splitkb's shield
+    # never blanks; the e-paper must not blank, so this stays out of halcyon_elora_left.conf).
+    cmake-args: -DCONFIG_ZMK_SPLIT_ROLE_CENTRAL=n -DCONFIG_ZMK_DISPLAY_BLANK_ON_IDLE=y -DCONFIG_ZMK_IDLE_TIMEOUT=5000
   - board: halcyon_wireless//zmk
     shield: halcyon_elora_right mod_battery_coincell mod_cirque_hw_right
     artifact-name: halcyon_elora_right
@@ -46,7 +48,7 @@ include:
     shield: halcyon_elora_left mod_battery_coincell mod_display_tft
     artifact-name: debug_halcyon_elora_left
     snippet: zmk-usb-logging
-    cmake-args: -DCONFIG_ZMK_SPLIT_ROLE_CENTRAL=n -DCONFIG_ZMK_LOG_LEVEL_DBG=y -DCONFIG_DISPLAY_LOG_LEVEL_DBG=y
+    cmake-args: -DCONFIG_ZMK_SPLIT_ROLE_CENTRAL=n -DCONFIG_ZMK_DISPLAY_BLANK_ON_IDLE=y -DCONFIG_ZMK_IDLE_TIMEOUT=5000 -DCONFIG_ZMK_LOG_LEVEL_DBG=y -DCONFIG_DISPLAY_LOG_LEVEL_DBG=y
   - board: halcyon_wireless//zmk
     shield: halcyon_elora_left mod_battery_coincell mod_encoder_left mod_encoder_rev1_left
     artifact-name: debug_halcyon_elora_left_encoder

@@ -145,12 +145,28 @@ Rev2-specific keys:
 
 `halcyon_elora_left` builds splitkb's `mod_display_tft` shield (1.14" ST7789, 135x240). The left
 half is a split peripheral, so the display shows what ZMK's peripheral status screen offers:
-battery and connection state. Layer and lock status live on the central, which is the dongle
-here. The TFT has a backlight on VIK pin AD_1; ZMK blanks the display after
-`CONFIG_ZMK_IDLE_TIMEOUT` (30 s by default). Expect the coincell to drain much faster than with
-a passive module; the LiPo board fixes that. `halcyon_elora_left_epaper` is the same build with
-`mod_display_epaper_mountain` in case the module is the e-paper one (the other images are
-`forest` and `cityscape`, swap the shield name in `build.yaml`).
+its own battery and whether it is connected. Layer, lock and right-half battery state live on
+the central (the dongle), and neither ZMK nor splitkb's fork sends any of it back to a
+peripheral: the only central-to-peripheral messages are behavior invocations, the physical
+layout index and HID lock indicators. Showing dongle-side status on this screen would mean
+custom split code on both ends.
+
+Power, TFT build only (`cmake-args` in `build.yaml`):
+
+- splitkb's TFT shield never blanks. This config turns `CONFIG_ZMK_DISPLAY_BLANK_ON_IDLE` on and
+  sets `CONFIG_ZMK_IDLE_TIMEOUT` to 5 s, so the panel and backlight switch off 5 s after the last
+  key press on the left half (each half keeps its own idle clock) and come back on the next one.
+- Sys layer, left half, row 3 fifth key (`DISP`): forces the display and backlight off until
+  pressed again. It stays off across idle and wake, with at most a 0.3 s flash of the backlight
+  when the half wakes from idle. The behavior lives in `drivers/behavior/display_toggle` and is
+  a no-op on parts without a display. The ST7789 controller stays powered in that state (a
+  fraction of a milliampere); cutting the VIK rail would kill the touchpad on the right too.
+- Deep sleep after 15 min of idle already cuts the module rail.
+
+Expect the coincell to drain faster than with a passive module regardless; the LiPo board fixes
+that. `halcyon_elora_left_epaper` is the same build with `mod_display_epaper_mountain` for the
+e-paper module (the other images are `forest` and `cityscape`, swap the shield name in
+`build.yaml`); e-paper must not blank, which is why the idle settings are per target.
 
 ## Encoder module rev 1.0 (spare target)
 
@@ -188,6 +204,8 @@ and drop those two `CONFIG_ZMK_EXT_POWER*` lines.
 | Kconfig shared by all three builds | `config/halcyon_elora.conf` |
 | Build targets and modules | `build.yaml` |
 | Rev 1.0 encoder driver swap and step count | `boards/shields/mod_encoder_rev1_left/` |
+| Display idle timeout and blanking (TFT targets) | `build.yaml`, `cmake-args` |
+| Display off key behavior | `drivers/behavior/display_toggle/` |
 | Physical layout for the keymap editor | `config/halcyon_elora.json` |
 
 Rules that are easy to trip over:

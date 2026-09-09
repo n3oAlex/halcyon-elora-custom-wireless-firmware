@@ -1,1 +1,2 @@
 add_subdirectory_ifdef(CONFIG_EC11_CLASSIC sensor/ec11_classic)
+add_subdirectory_ifdef(CONFIG_ZMK_BEHAVIOR_DISPLAY_TOGGLE behavior/display_toggle)
