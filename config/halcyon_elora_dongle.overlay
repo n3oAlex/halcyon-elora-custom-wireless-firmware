@@ -1,0 +1,28 @@
+/*
+ * Dongle-only devicetree tweaks.
+ *
+ * ZMK applies exactly one overlay from config/ per build, chosen by shield name.
+ * Keep this file dongle-specific and never add a shared halcyon_elora.overlay,
+ * it would shadow this one.
+ *
+ * The Cirque touchpad is read on the right half and streamed to the dongle, so
+ * the input listener (and therefore all pointer tuning) lives here.
+ */
+
+#include <input/processors.dtsi>
+
+#define NAV 1
+
+&trackpad_listener {
+    /* Cursor speed: multiply pointer deltas by MUL/DIV. 2 1 = twice as fast. */
+    input-processors = <&zip_xy_scaler 2 1>;
+
+    /* While NAV is held, finger movement scrolls instead of moving the cursor.
+     * Too fast or too slow: prepend <&zip_xy_scaler MUL DIV>, e.g. <&zip_xy_scaler 1 2>.
+     * Wrong direction: prepend <&zip_xy_transform (INPUT_TRANSFORM_Y_INVERT)> and
+     * #include <dt-bindings/zmk/input_transform.h> at the top. */
+    scroller {
+        layers = <NAV>;
+        input-processors = <&zip_xy_to_scroll_mapper>;
+    };
+};

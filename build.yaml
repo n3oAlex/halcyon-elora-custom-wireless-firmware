@@ -1,0 +1,24 @@
+# This file generates the GitHub Actions matrix.
+# Hardware: Halcyon Elora rev2, wireless controllers + dongle, coincell battery boards,
+# left half: Halcyon Rotary Encoder rev2, right half: Halcyon Cirque Touchpad.
+# See README.md for what each artifact is and where to flash it.
+---
+include:
+  - board: halcyon_dongle//zmk
+    shield: halcyon_elora_dongle mod_cirque_central
+    artifact-name: halcyon_elora_dongle
+    cmake-args: -DCONFIG_ZMK_STUDIO=y
+    snippet: studio-rpc-usb-uart
+  - board: halcyon_wireless//zmk
+    shield: halcyon_elora_left mod_battery_coincell mod_encoder_left
+    artifact-name: halcyon_elora_left
+    cmake-args: -DCONFIG_ZMK_SPLIT_ROLE_CENTRAL=n
+  - board: halcyon_wireless//zmk
+    shield: halcyon_elora_right mod_battery_coincell mod_cirque_hw_right
+    artifact-name: halcyon_elora_right
+  - board: halcyon_wireless//zmk
+    shield: settings_reset
+    artifact-name: settings_reset_controller
+  - board: halcyon_dongle//zmk
+    shield: settings_reset
+    artifact-name: settings_reset_dongle

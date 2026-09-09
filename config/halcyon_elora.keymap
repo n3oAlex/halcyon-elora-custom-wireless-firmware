@@ -1,0 +1,202 @@
+/*
+ * Halcyon Elora rev2 keymap, ported 1:1 from a Vial/QMK Elora rev1 layout.
+ *
+ * Physical key order per layer (must match config/halcyon_elora.json):
+ *   rows 0-2: 6 left | 6 right
+ *   row 3:    6 left, 2 inner left | 2 inner right, 6 right
+ *   thumbs:   5 left (outer -> inner) | 5 right (inner -> outer)
+ *   halcyon:  5 left | 5 right  (only left slot 1 is real: the encoder push button)
+ *
+ * Sensor order: left halcyon encoder, right halcyon encoder, left soldered, right soldered.
+ * Only the first exists on this build; the other three entries are placeholders.
+ */
+
+#include <behaviors.dtsi>
+#include <dt-bindings/zmk/bt.h>
+#include <dt-bindings/zmk/keys.h>
+#include <dt-bindings/zmk/outputs.h>
+#include <dt-bindings/zmk/pointing.h>
+#include <dt-bindings/zmk/rgb.h>
+
+#define BASE 0
+#define NAV  1
+#define NUM  2
+#define CMD  3
+#define GAME 4
+#define SYS  5
+
+&mt {
+    tapping-term-ms = <175>;
+    quick-tap-ms = <150>;
+    flavor = "balanced";
+};
+
+&lt {
+    tapping-term-ms = <175>;
+    quick-tap-ms = <150>;
+    flavor = "balanced";
+};
+
+/ {
+    behaviors {
+        // Vial TD(0): tap Cmd+X, double-tap Cmd+C
+        td_cut_copy: td_cut_copy {
+            compatible = "zmk,behavior-tap-dance";
+            #binding-cells = <0>;
+            tapping-term-ms = <200>;
+            bindings = <&kp LG(X)>, <&kp LG(C)>;
+        };
+
+        // Vial TD(0) hold part: hold for a layer, tap runs td_cut_copy. Use as &ht_cmd CMD 0
+        ht_cmd: ht_cmd {
+            compatible = "zmk,behavior-hold-tap";
+            #binding-cells = <2>;
+            tapping-term-ms = <175>;
+            flavor = "balanced";
+            bindings = <&mo>, <&td_cut_copy>;
+        };
+
+        // Encoder as mouse scroll wheel. tap-ms must be >= the &msc tick (16 ms) or nothing is sent.
+        inc_dec_msc: inc_dec_msc {
+            compatible = "zmk,behavior-sensor-rotate-var";
+            #sensor-binding-cells = <2>;
+            bindings = <&msc>, <&msc>;
+            tap-ms = <20>;
+        };
+    };
+
+    combos {
+        compatible = "zmk,combos";
+
+        combo_num      { key-positions = <55 58>; bindings = <&mo NUM>; };        // LALT + SPACE
+        combo_game     { key-positions = <0 11>;  bindings = <&tog GAME>; };      // ESC + MINUS
+        combo_rbrc     { key-positions = <27 28>; bindings = <&kp RBRC>; };       // D + F
+        combo_rbkt     { key-positions = <31 32>; bindings = <&kp RBKT>; };       // J + K
+        combo_alt_lbkt { key-positions = <39 40>; bindings = <&kp LA(LBKT)>; };   // C + V
+        combo_alt_rbkt { key-positions = <47 48>; bindings = <&kp LA(RBKT)>; };   // M + COMMA
+        combo_alt_9    { key-positions = <15 16>; bindings = <&kp LA(N9)>; };     // E + R
+        combo_alt_0    { key-positions = <19 20>; bindings = <&kp LA(N0)>; };     // U + I
+
+        // Hold both outermost thumb-row keys for the SYS layer
+        combo_sys {
+            key-positions = <52 61>;
+            bindings = <&mo SYS>;
+            timeout-ms = <150>;
+            slow-release;
+        };
+    };
+
+    keymap {
+        compatible = "zmk,keymap";
+
+        base_layer {
+            display-name = "Base";
+// ---------------------------------------------------------------------------------------------------------------
+// |  ESC  |  1  |  2  |  3  |  4  |  5  |                                    |  6  |  7  |  8  |  9  |  0  |  -   |
+// |  TAB  |  Q  |  W  |  E  |  R  |  T  |                                    |  Y  |  U  |  I  |  O  |  P  |  [   |
+// | SHFT  |  A  |  S  |  D  |  F  |  G  |                                    |  H  |  J  |  K  |  L  |  ;  |SFT/' |
+// |CTL/TAB|  Z  |  X  |  C  |  V  |  B  | PREV | NEXT |        | LCLK | RCLK |  N  |  M  |  ,  |GUI/.|ALT//|CTL/RET|
+//                 | SYS* | NUM | MEH/TAB | ALT | GUI/RET |    | HYP/BSPC | NAV/SPC | ALT/DEL | NUM | SYS* |
+// halcyon row:    | PLAY |     |     |     |     |                        |     |     |     |     |     |
+            bindings = <
+&kp ESC      &kp N1 &kp N2 &kp N3 &kp N4 &kp N5                                                                 &kp N6 &kp N7 &kp N8    &kp N9      &kp N0       &kp MINUS
+&kp TAB      &kp Q  &kp W  &kp E  &kp R  &kp T                                                                  &kp Y  &kp U  &kp I     &kp O       &kp P        &kp LBKT
+&kp LSHFT    &kp A  &kp S  &kp D  &kp F  &kp G                                                                  &kp H  &kp J  &kp K     &kp L       &kp SEMI     &mt RSHFT SQT
+&mt LCTRL TAB &kp Z &kp X  &kp C  &kp V  &kp B  &kp C_PREV &kp C_NEXT                   &mkp LCLK &mkp RCLK    &kp N  &kp M  &kp COMMA &mt RGUI DOT &mt RALT FSLH &mt RCTRL RET
+                    &none  &mo NUM &mt LS(LC(LALT)) TAB &kp LALT &mt LGUI RET           &mt LS(LC(LA(LGUI))) BSPC &lt NAV SPACE &mt RALT DEL &mo NUM &none
+
+&kp C_PP &none &none &none &none                                                                                                  &none &none &none &none &none
+            >;
+            sensor-bindings = <&inc_dec_kp C_VOL_UP C_VOL_DN &inc_dec_kp C_VOL_UP C_VOL_DN &inc_dec_kp C_VOL_UP C_VOL_DN &inc_dec_kp C_VOL_UP C_VOL_DN>;
+        };
+
+        nav_layer {
+            display-name = "Nav";
+// ---------------------------------------------------------------------------------------------------------------
+// |       |     |     |     |     |     |                                    |HYP 1|A+G <|     |A+G >|HYP 2|HYP 6 |
+// |       |     |HYP 7|HYP 8|  -  |  =  |                                    |HOME |ALT <|CMD V|ALT >| END |      |
+// |       |HYP 3|HYP 4|HYP 5|  {  |  }  |                                    |LEFT |DOWN | UP  |RIGHT|CUT/CMD|CTL-B/SFT|
+// |       |     |     |ALT 5|  \  |  `  |     |     |          |     |     |CTL <|CTL v|CTL ^|CTL >|CMD C| RET  |
+// halcyon row:    | MUTE |     |     |     |     |     encoder: scroll
+            bindings = <
+&trans &trans          &trans          &trans          &trans    &trans                                                     &kp LS(LC(LA(LG(N1))))  &kp LA(LG(LEFT)) &none        &kp LA(LG(RIGHT)) &kp LS(LC(LA(LG(N2))))   &kp LS(LC(LA(LG(N6))))
+&trans &trans          &kp LS(LC(LA(LG(N7))))    &kp LS(LC(LA(LG(N8))))    &kp MINUS &kp EQUAL                                                  &kp HOME      &kp LA(LEFT)     &kp LG(V)    &kp LA(RIGHT)     &kp END        &none
+&trans &kp LS(LC(LA(LG(N3))))    &kp LS(LC(LA(LG(N4))))    &kp LS(LC(LA(LG(N5))))    &kp LBRC  &kp RBRC                                                   &kp LEFT      &kp DOWN         &kp UP       &kp RIGHT         &ht_cmd CMD 0  &mt RSHFT LC(B)
+&trans &trans          &trans          &kp LA(N5)      &kp BSLH  &kp GRAVE &trans &trans                    &trans &trans   &kp LC(LEFT)  &kp LC(DOWN)     &kp LC(UP)   &kp LC(RIGHT)     &kp LG(C)      &kp RET
+                                       &trans          &trans    &trans    &trans &trans                    &trans &trans   &trans        &trans           &trans
+
+&kp C_MUTE &trans &trans &trans &trans                                                                                                    &trans &trans &trans &trans &trans
+            >;
+            sensor-bindings = <&inc_dec_msc SCRL_UP SCRL_DOWN &inc_dec_msc SCRL_UP SCRL_DOWN &inc_dec_msc SCRL_UP SCRL_DOWN &inc_dec_msc SCRL_UP SCRL_DOWN>;
+        };
+
+        num_layer {
+            display-name = "Num";
+// ---------------------------------------------------------------------------------------------------------------
+// |       |     |     |     |     |     |                                    |     |     |     |     |     |      |
+// |       |  1  |  2  |  3  |  4  |  5  |                                    |  6  |  7  |  8  |  9  |  0  |      |
+// |       |  !  |  @  |  #  |  $  |  %  |                                    |  ^  |  &  |  *  |  (  |  )  |      |
+// |       |ALT 1|ALT 2|ALT 3|ALT 4|ALT 5|     |     |          |     |     |ALT 6|ALT 7|ALT 8|ALT 9|ALT 0|      |
+            bindings = <
+&trans &trans     &trans     &trans     &trans     &trans                                                          &trans     &trans     &trans     &trans     &trans     &trans
+&trans &kp N1     &kp N2     &kp N3     &kp N4     &kp N5                                                          &kp N6     &kp N7     &kp N8     &kp N9     &kp N0     &trans
+&trans &kp LS(N1) &kp LS(N2) &kp LS(N3) &kp LS(N4) &kp LS(N5)                                                      &kp LS(N6) &kp LS(N7) &kp LS(N8) &kp LS(N9) &kp LS(N0) &trans
+&trans &kp LA(N1) &kp LA(N2) &kp LA(N3) &kp LA(N4) &kp LA(N5) &trans &trans                        &trans &trans   &kp LA(N6) &kp LA(N7) &kp LA(N8) &kp LA(N9) &kp LA(N0) &trans
+                              &trans    &trans     &trans     &trans &trans                        &trans &trans   &trans     &trans     &trans
+
+&trans &trans &trans &trans &trans                                                                                                     &trans &trans &trans &trans &trans
+            >;
+            sensor-bindings = <&inc_dec_kp C_VOL_UP C_VOL_DN &inc_dec_kp C_VOL_UP C_VOL_DN &inc_dec_kp C_VOL_UP C_VOL_DN &inc_dec_kp C_VOL_UP C_VOL_DN>;
+        };
+
+        cmd_layer {
+            display-name = "Cmd";
+// Held via the cut/copy key on Nav. Only the right upper row is used.
+            bindings = <
+&trans &trans &trans &trans &trans &trans                                                          &trans       &trans           &trans    &trans            &trans       &trans
+&trans &trans &trans &trans &trans &trans                                                          &kp LS(LC(LA(LG(N1)))) &kp LA(LG(LEFT)) &kp LG(V) &kp LA(LG(RIGHT)) &kp LS(LC(LA(LG(N2)))) &trans
+&trans &trans &trans &trans &trans &trans                                                          &trans       &trans           &trans    &trans            &trans       &trans
+&trans &trans &trans &trans &trans &trans &trans &trans                          &trans &trans     &trans       &trans           &trans    &trans            &trans       &trans
+                     &trans &trans &trans &trans &trans                          &trans &trans     &trans       &trans           &trans
+
+&trans &trans &trans &trans &trans                                                                                                       &trans &trans &trans &trans &trans
+            >;
+            sensor-bindings = <&inc_dec_kp C_VOL_UP C_VOL_DN &inc_dec_kp C_VOL_UP C_VOL_DN &inc_dec_kp C_VOL_UP C_VOL_DN &inc_dec_kp C_VOL_UP C_VOL_DN>;
+        };
+
+        game_layer {
+            display-name = "Game";
+// Toggle with ESC + MINUS combo. Left hand only; plain keys, no mod-taps.
+// Old inner-column keys L (left) and RALT (right) had no slot on rev2 and were dropped.
+            bindings = <
+&kp ESC   &kp N1 &kp N2 &kp N3 &kp N4 &kp N5                                                  &trans &trans &trans &trans &trans &trans
+&kp Q     &kp A  &kp W  &kp E  &kp R  &kp T                                                   &trans &trans &trans &trans &trans &trans
+&kp LSHFT &kp Q  &kp S  &kp D  &kp F  &kp G                                                   &trans &trans &trans &trans &trans &trans
+&kp LCTRL &kp Z  &kp X  &kp C  &kp V  &kp B  &kp Z &kp M                     &kp LALT &kp LGUI &trans &trans &trans &trans &trans &trans
+                 &trans &kp TAB &kp Y &kp SPACE &kp LALT                     &trans   &trans   &trans &trans &trans
+
+&trans &trans &trans &trans &trans                                                                                          &trans &trans &trans &trans &trans
+            >;
+            sensor-bindings = <&inc_dec_kp C_VOL_UP C_VOL_DN &inc_dec_kp C_VOL_UP C_VOL_DN &inc_dec_kp C_VOL_UP C_VOL_DN &inc_dec_kp C_VOL_UP C_VOL_DN>;
+        };
+
+        sys_layer {
+            display-name = "Sys";
+// Hold both outermost thumb-row keys.
+// | BOOT |      |      |      |      |      |                  |       |       |       |       |       | BOOT |
+// |      |BT CLR| BT 0 | BT 1 | BT 2 | BT 3 |                  |RGB TOG|RGB HUI|RGB SAI|RGB BRI|RGB EFF|      |
+// |      |USB   |BLE   |OUT TG|      |      |                  |RGB OFF|RGB HUD|RGB SAD|RGB BRD|RGB EFR|      |
+// | RESET|      |      |      |      |      |  |  |      |  |  |       |       |       |       |       | RESET|
+            bindings = <
+&bootloader &trans       &trans       &trans       &trans       &trans                                                    &trans          &trans          &trans          &trans          &trans          &bootloader
+&trans      &bt BT_CLR   &bt BT_SEL 0 &bt BT_SEL 1 &bt BT_SEL 2 &bt BT_SEL 3                                              &rgb_ug RGB_TOG &rgb_ug RGB_HUI &rgb_ug RGB_SAI &rgb_ug RGB_BRI &rgb_ug RGB_EFF &trans
+&trans      &out OUT_USB &out OUT_BLE &out OUT_TOG &trans       &trans                                                    &rgb_ug RGB_OFF &rgb_ug RGB_HUD &rgb_ug RGB_SAD &rgb_ug RGB_BRD &rgb_ug RGB_EFR &trans
+&sys_reset  &trans       &trans       &trans       &trans       &trans       &trans &trans              &trans &trans     &trans          &trans          &trans          &trans          &trans          &sys_reset
+                                      &trans       &trans       &trans       &trans &trans              &trans &trans     &trans          &trans          &trans
+
+&trans &trans &trans &trans &trans                                                                                                                         &trans &trans &trans &trans &trans
+            >;
+            sensor-bindings = <&inc_dec_kp C_VOL_UP C_VOL_DN &inc_dec_kp C_VOL_UP C_VOL_DN &inc_dec_kp C_VOL_UP C_VOL_DN &inc_dec_kp C_VOL_UP C_VOL_DN>;
+        };
+    };
+};

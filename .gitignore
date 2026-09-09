@@ -1,0 +1,4 @@
+.agents/tmp/
+.agents/archive/*
+!.agents/archive/.gitkeep
+.DS_Store
