@@ -1,7 +1,0 @@
-if SENSOR
-
-rsource "sensor/ec11_classic/Kconfig"
-
-endif # SENSOR
-
-rsource "behavior/display_toggle/Kconfig"

@@ -1,4 +1,0 @@
-config ZMK_BEHAVIOR_DISPLAY_TOGGLE
-    bool "Display toggle behavior (forces the local display and backlight off)"
-    default y
-    depends on DT_HAS_ZMK_BEHAVIOR_DISPLAY_TOGGLE_ENABLED

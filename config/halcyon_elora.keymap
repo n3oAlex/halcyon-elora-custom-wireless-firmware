@@ -5,10 +5,10 @@
  *   rows 0-2: 6 left | 6 right
  *   row 3:    6 left, 2 inner left | 2 inner right, 6 right
  *   thumbs:   5 left (outer -> inner) | 5 right (inner -> outer)
- *   halcyon:  5 left | 5 right  (only left slot 1 is real: the encoder push button)
+ *   halcyon:  5 left | 5 right  (only left slot 1 is real: the push button of a rev 2 encoder module)
  *
  * Sensor order: left halcyon encoder, right halcyon encoder, left soldered, right soldered.
- * Only the first exists on this build; the other three entries are placeholders.
+ * None is fitted right now; the bindings are kept for a rev 2 encoder module.
  */
 
 #include <behaviors.dtsi>
@@ -39,14 +39,6 @@
 
 / {
     behaviors {
-        // Sys layer: forces the left half's display and backlight off until pressed again
-        // (drivers/behavior/display_toggle in this repo).
-        dispoff: dispoff {
-            compatible = "zmk,behavior-display-toggle";
-            #binding-cells = <0>;
-            display-name = "Display Off";
-        };
-
         // Vial TD(0): tap Cmd+X, double-tap Cmd+C
         td_cut_copy: td_cut_copy {
             compatible = "zmk,behavior-tap-dance";
@@ -193,12 +185,12 @@
 // Hold both outermost thumb-row keys.
 // | BOOT |      |      |      |      |      |                  |       |       |       |       |       | BOOT |
 // |      |BT CLR| BT 0 | BT 1 | BT 2 | BT 3 |                  |RGB TOG|RGB HUI|RGB SAI|RGB BRI|RGB EFF|      |
-// |      |USB   |BLE   |OUT TG|DISP  |      |                  |RGB OFF|RGB HUD|RGB SAD|RGB BRD|RGB EFR|      |
+// |      |USB   |BLE   |OUT TG|      |      |                  |RGB OFF|RGB HUD|RGB SAD|RGB BRD|RGB EFR|      |
 // | RESET|      |      |      |      |      |  |  |      |  |  |       |       |       |       |       | RESET|
             bindings = <
 &bootloader &trans       &trans       &trans       &trans       &trans                                                    &trans          &trans          &trans          &trans          &trans          &bootloader
 &trans      &bt BT_CLR   &bt BT_SEL 0 &bt BT_SEL 1 &bt BT_SEL 2 &bt BT_SEL 3                                              &rgb_ug RGB_TOG &rgb_ug RGB_HUI &rgb_ug RGB_SAI &rgb_ug RGB_BRI &rgb_ug RGB_EFF &trans
-&trans      &out OUT_USB &out OUT_BLE &out OUT_TOG &dispoff     &trans                                                    &rgb_ug RGB_OFF &rgb_ug RGB_HUD &rgb_ug RGB_SAD &rgb_ug RGB_BRD &rgb_ug RGB_EFR &trans
+&trans      &out OUT_USB &out OUT_BLE &out OUT_TOG &trans       &trans                                                    &rgb_ug RGB_OFF &rgb_ug RGB_HUD &rgb_ug RGB_SAD &rgb_ug RGB_BRD &rgb_ug RGB_EFR &trans
 &sys_reset  &trans       &trans       &trans       &trans       &trans       &trans &trans              &trans &trans     &trans          &trans          &trans          &trans          &trans          &sys_reset
                                       &trans       &trans       &trans       &trans &trans              &trans &trans     &trans          &trans          &trans
 

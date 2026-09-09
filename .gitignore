@@ -3,3 +3,4 @@
 !.agents/archive/.gitkeep
 .DS_Store
 logs/
+.serena/

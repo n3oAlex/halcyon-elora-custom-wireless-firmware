@@ -1,4 +1,0 @@
-# Add-on for splitkb's mod_encoder_left: re-types the encoder node for the rev 1.0 module.
-# List it AFTER mod_encoder_left in build.yaml so its .conf wins.
-config SHIELD_MOD_ENCODER_REV1_LEFT
-    def_bool $(shields_list_contains,mod_encoder_rev1_left)

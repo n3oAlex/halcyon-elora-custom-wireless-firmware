@@ -151,3 +151,10 @@ cmake+kconfig), left overlay re-types node, steps=40, left conf disables fork EC
   left VIK path when the e-paper arrives (same SPI bus, same CS/DC/RESET lines). If blank again,
   build a right-half display target to isolate module vs connector.
 - Open: LiPo board -> mod_battery_lipo, drop EXT_POWER conf lines + both half overlays.
+
+## 2026-09-10: splitkb compatibility list found (blog "Introducing Halcyon Wireless")
+- Rev 1.0 encoder: hardware-incompatible with the wireless controllers. TFT: builds but drains a
+  battery in an hour. E-paper and rev 2 encoder: fine. => removed ec11_classic driver, the
+  mod_encoder_rev1_left shield, the TFT targets and the dispoff behavior (TFT backlight only).
+  Repo is back to a plain config repo (module.yml = board_root only).
+- Left VIK connector still suspect; e-paper will decide.
