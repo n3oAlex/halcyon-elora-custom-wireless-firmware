@@ -41,6 +41,13 @@ struct ec11c_data {
 #endif
 
 #endif /* CONFIG_EC11_CLASSIC_TRIGGER */
+
+#ifdef CONFIG_EC11_CLASSIC_DEBUG_POLL
+    struct k_work_delayable poll_work;
+    const struct device *poll_dev;
+    uint8_t poll_state;
+    uint8_t poll_count;
+#endif
 };
 
 #ifdef CONFIG_EC11_CLASSIC_TRIGGER

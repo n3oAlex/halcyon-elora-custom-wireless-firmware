@@ -108,6 +108,29 @@ static const struct sensor_driver_api ec11c_driver_api = {
     .channel_get = ec11c_channel_get,
 };
 
+#ifdef CONFIG_EC11_CLASSIC_DEBUG_POLL
+#define EC11C_POLL_INTERVAL K_MSEC(50)
+#define EC11C_POLL_HEARTBEAT 40 /* polls between unchanged-level log lines (2 s) */
+
+static void ec11c_poll_work_cb(struct k_work *work) {
+    struct k_work_delayable *dwork = k_work_delayable_from_work(work);
+    struct ec11c_data *drv_data = CONTAINER_OF(dwork, struct ec11c_data, poll_work);
+    const struct ec11c_config *drv_cfg = drv_data->poll_dev->config;
+    int a = gpio_pin_get_dt(&drv_cfg->a);
+    int b = gpio_pin_get_dt(&drv_cfg->b);
+    uint8_t state = (a << 1) | b;
+    bool changed = state != drv_data->poll_state;
+
+    if (changed || ++drv_data->poll_count >= EC11C_POLL_HEARTBEAT) {
+        LOG_INF("poll A=%d B=%d%s", a, b, changed ? " (changed)" : "");
+        drv_data->poll_state = state;
+        drv_data->poll_count = 0;
+    }
+
+    k_work_schedule(dwork, EC11C_POLL_INTERVAL);
+}
+#endif
+
 int ec11c_init(const struct device *dev) {
     struct ec11c_data *drv_data = dev->data;
     const struct ec11c_config *drv_cfg = dev->config;
@@ -143,6 +166,14 @@ int ec11c_init(const struct device *dev) {
 #endif
 
     drv_data->ab_state = ec11c_get_ab_state(dev);
+
+#ifdef CONFIG_EC11_CLASSIC_DEBUG_POLL
+    drv_data->poll_dev = dev;
+    drv_data->poll_state = drv_data->ab_state;
+    drv_data->poll_count = 0;
+    k_work_init_delayable(&drv_data->poll_work, ec11c_poll_work_cb);
+    k_work_schedule(&drv_data->poll_work, EC11C_POLL_INTERVAL);
+#endif
 
     return 0;
 }

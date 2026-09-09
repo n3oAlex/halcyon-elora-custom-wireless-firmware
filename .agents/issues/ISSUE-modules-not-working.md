@@ -104,3 +104,18 @@ If not: voltage/hardware on battery (Pinnacle undervolt would not explain a pass
 ZMK mod_encoder (A/B swapped = direction only). Fork EC11 one-active-pin driver stops after first
 click. Fix: vendored upstream two-line driver as halcyon,ec11-classic (drivers/, dts/, module.yml
 cmake+kconfig), left overlay re-types node, steps=40, left conf disables fork EC11.
+
+## Fifth report (user, 2026-09-09 22:02): encoder still dead, wired or not, with ec11-classic
+- logs/left-20260909-220212.log: identical signature to the fork driver log. Init reads A=0,B=0
+  (both contacts closed = EC12 closed detent). One A rising edge, 53 ms later one B rising edge
+  (state 10 -> 11), then nothing for the rest of the capture. Interrupts re-armed fine after each.
+- Two different drivers (fork one-active-pin, upstream two-line) fail identically => not driver
+  logic. Either the lines physically never go low again (module/cable/connector/encoder) or nRF
+  edge interrupts stop after the first two events (falling edges never seen).
+- Fork rewrite (69725d4) commit message: "fix missing pulses" (reads both pins on any edge). A real
+  improvement, not the bug.
+- Encoder button (vik_conn 0, kscan-gpio-direct, position 62) still never seen in any log.
+- Test: CONFIG_EC11_CLASSIC_DEBUG_POLL (debug left build only) logs raw A/B levels every 50 ms
+  on change + 2 s heartbeat. Lines change while turning but no EC11C interrupt lines => firmware.
+  Lines stuck at 1/1 while turning => hardware (encoder common not reaching GND after first click,
+  cable/connector).

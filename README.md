@@ -74,8 +74,11 @@ ports with `--list`.
 
 What to look for:
 
-- Left half: lines mentioning `ec11` or `sensor` when the encoder turns, and a `kscan` /
-  position event for position 62 when its button is pressed.
+- Left half: `EC11C` lines when the encoder turns, and a `kscan` / position event for
+  position 62 when its button is pressed. The debug build also prints `EC11C: poll A=.. B=..`
+  on every raw level change (plus a heartbeat every 2 s): if those lines change while you turn
+  but no interrupt lines follow, the firmware is at fault; if they never change, the module,
+  cable or connector is.
 - Right half: `pinnacle` at boot (driver init, any error code) and `input` events on touch.
 - Dongle: `split` connection lines for both peripherals, then `sensor` or `input` events arriving
   from them.

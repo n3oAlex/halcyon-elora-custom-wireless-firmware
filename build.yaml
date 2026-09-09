@@ -34,7 +34,7 @@ include:
     shield: halcyon_elora_left mod_battery_coincell mod_encoder_left
     artifact-name: debug_halcyon_elora_left
     snippet: zmk-usb-logging
-    cmake-args: -DCONFIG_ZMK_SPLIT_ROLE_CENTRAL=n -DCONFIG_ZMK_LOG_LEVEL_DBG=y -DCONFIG_SENSOR_LOG_LEVEL_DBG=y -DCONFIG_INPUT_LOG_LEVEL_DBG=y
+    cmake-args: -DCONFIG_ZMK_SPLIT_ROLE_CENTRAL=n -DCONFIG_ZMK_LOG_LEVEL_DBG=y -DCONFIG_SENSOR_LOG_LEVEL_DBG=y -DCONFIG_INPUT_LOG_LEVEL_DBG=y -DCONFIG_EC11_CLASSIC_DEBUG_POLL=y
   - board: halcyon_wireless//zmk
     shield: halcyon_elora_right mod_battery_coincell mod_cirque_hw_right
     artifact-name: debug_halcyon_elora_right

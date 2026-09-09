@@ -49,4 +49,11 @@ config EC11_CLASSIC_THREAD_STACK_SIZE
     help
       Stack size of thread used by the driver to handle interrupts.
 
+config EC11_CLASSIC_DEBUG_POLL
+    bool "Log raw A/B pin levels periodically (debugging only)"
+    help
+      Polls both encoder lines every 50 ms and logs each level change plus a heartbeat
+      every 2 s. Separates a module that never changes the lines from interrupts that
+      stop firing. Costs battery; only for debug builds.
+
 endif # EC11_CLASSIC
