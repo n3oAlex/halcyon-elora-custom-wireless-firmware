@@ -7,7 +7,7 @@ ZMK config for one specific keyboard:
 | Keyboard | Halcyon Elora rev2 |
 | Controllers | Halcyon Wireless, both halves, plus Halcyon Dongle |
 | Battery boards | Coincell (`mod_battery_coincell`) |
-| Left half module | Halcyon Rotary Encoder **rev 1.0** (`mod_encoder_left` shield, own driver, see below) |
+| Left half module | Halcyon TFT LCD Display (`mod_display_tft`). The rev 1.0 Rotary Encoder is a spare target, see below |
 | Right half module | Halcyon Cirque Touchpad (`mod_cirque_hw_right`) |
 | Host | macOS, dongle on USB |
 
@@ -42,7 +42,9 @@ a half in only charges it and, with a debug build, exposes its log.
 | Artifact | Flash to |
 | :--- | :--- |
 | `halcyon_elora_dongle` | Dongle. ZMK Studio enabled, no unlock needed. |
-| `halcyon_elora_left` | Left half (encoder). |
+| `halcyon_elora_left` | Left half (TFT display). |
+| `halcyon_elora_left_epaper` | Left half if the display module turns out to be the e-paper one (mountain image). |
+| `halcyon_elora_left_encoder` | Left half with the rev 1.0 encoder module instead of a display. |
 | `halcyon_elora_right` | Right half (touchpad). |
 | `settings_reset_controller` | A half that refuses to pair. Flash, wait 5 s, then flash its normal image again. |
 | `settings_reset_dongle` | Same for the dongle. |
@@ -74,11 +76,13 @@ ports with `--list`.
 
 What to look for:
 
-- Left half: `EC11C` lines when the encoder turns, and a `kscan` / position event for
-  position 62 when its button is pressed. The debug build also prints `EC11C: poll A=.. B=..`
-  on every raw level change (plus a heartbeat every 2 s): if those lines change while you turn
-  but no interrupt lines follow, the firmware is at fault; if they never change, the module,
-  cable or connector is.
+- Left half with the display (`debug_halcyon_elora_left`): `display` or `st7789v` lines at boot;
+  an error code there means the SPI device did not answer.
+- Left half with the encoder (`debug_halcyon_elora_left_encoder`): `EC11C` lines when the
+  encoder turns, and a `kscan` / position event for position 62 when its button is pressed. This
+  build also prints `EC11C: poll A=.. B=..` on every raw level change (plus a heartbeat every
+  2 s): if those lines change while you turn but no interrupt lines follow, the firmware is at
+  fault; if they never change, the module, cable or connector is.
 - Right half: `pinnacle` at boot (driver init, any error code) and `input` events on touch.
 - Dongle: `split` connection lines for both peripherals, then `sensor` or `input` events arriving
   from them.
@@ -89,12 +93,11 @@ What to look for:
   **NC** for the wireless build; the encoder guide allows NC or 5V. On 5V the module rail only
   exists while USB is plugged in, so a touchpad that works on a cable and dies on battery is the
   textbook symptom of a right half left on 5V. Move it with a plastic tool, not metal.
-- **Encoder that sends exactly one step and then nothing.** splitkb's ZMK fork replaced the EC11
-  driver with one that arms an interrupt on only one of the two encoder lines at a time and swaps
-  after each edge. If the second line (B, VIK pin AD_1) never reaches the controller, the driver
-  emits one event on the first A edge and then waits forever. That points at the encoder module's
-  flat cable not being fully seated, or a bad line, not at the config. The debug log shows it as a
-  first `EC11` state line with nothing after it, or `Unable to set B pin GPIO interrupt`.
+- **Encoder lines that never move.** On this keyboard the rev 1.0 encoder module never pulled
+  its A, B or button line low on any firmware (stock, the fork driver, the vendored driver, and a
+  raw pin poll all agree), while the keys on the same half worked. That is the module, its flat
+  cable or the VIK connector, not the config. Swapping in the right half's known-good cable is the
+  cheapest test.
 - **Flat cables.** Insert with the blue side up, push fully home, lock the tab. Both modules hang
   off the same VIK connector on their half.
 Comparing against the stock firmware for the same hardware from
@@ -129,7 +132,7 @@ Ported 1:1 from a Vial/QMK Elora rev1 layout.
 
 Rev2-specific keys:
 
-- Encoder: volume; press is play/pause. On Nav: scroll; press is mute.
+- Encoder (encoder target only): volume; press is play/pause. On Nav: scroll; press is mute.
 - Left inner row-3 keys: previous / next track.
 - Right inner row-3 keys (under the touchpad): left click / right click. Tap-to-click is also on.
 - Touchpad modes: normal cursor at 3x, scroll while Space (Nav) is held, precision (raw 1:1)
@@ -138,19 +141,33 @@ Rev2-specific keys:
 - The Game layer had three inner-column keys per side on rev1 and two on rev2. `L` (left) and
   `RALT` (right) were dropped; reassign them in the editor if you use them.
 
-## Encoder module rev 1.0
+## Display module on the left half
+
+`halcyon_elora_left` builds splitkb's `mod_display_tft` shield (1.14" ST7789, 135x240). The left
+half is a split peripheral, so the display shows what ZMK's peripheral status screen offers:
+battery and connection state. Layer and lock status live on the central, which is the dongle
+here. The TFT has a backlight on VIK pin AD_1; ZMK blanks the display after
+`CONFIG_ZMK_IDLE_TIMEOUT` (30 s by default). Expect the coincell to drain much faster than with
+a passive module; the LiPo board fixes that. `halcyon_elora_left_epaper` is the same build with
+`mod_display_epaper_mountain` in case the module is the e-paper one (the other images are
+`forest` and `cityscape`, swap the shield name in `build.yaml`).
+
+## Encoder module rev 1.0 (spare target)
 
 splitkb's ZMK module only knows the rev 2 encoder. Rev 1.0 uses the same VIK pins (A on AD_1, B
 on AD_2, push button on SDA, per splitkb's QMK userspace) but an ALPS EC12 that yields two
-quadrature edges per click instead of four. splitkb's ZMK fork replaced the stock EC11 driver
-with one that arms an interrupt on only one encoder line at a time; on this module it delivers
-one click and then goes silent (seen in the debug log). This repo therefore ships upstream ZMK's
-original two-line driver under `drivers/sensor/ec11_classic` (compatible
-`halcyon,ec11-classic`), and `config/halcyon_elora_left.overlay` re-types the left encoder node
-to it with `steps = <40>` (2 edges times 20 clicks per turn). If one click ever gives two volume
-steps, raise `steps` to 80; if it takes two clicks per step, lower it to 20. When a rev 2 module
-arrives, delete that overlay block and the four `CONFIG_EC11*` lines in
-`config/halcyon_elora_left.conf`.
+quadrature edges per click instead of four. EC11 and EC12 are ALPS part families for the same
+kind of two-line quadrature encoder, so the same driver applies; only the edges per click differ.
+splitkb's ZMK fork replaced the stock EC11 driver with one that arms an interrupt on only one
+encoder line at a time, which loses edges on a two-edge encoder, so this repo ships upstream
+ZMK's original two-line driver under `drivers/sensor/ec11_classic` (compatible
+`halcyon,ec11-classic`). The add-on shield `boards/shields/mod_encoder_rev1_left` re-types the
+left encoder node to it with `steps = <40>` (2 edges times 20 clicks per turn) and swaps the
+Kconfig drivers; `halcyon_elora_left_encoder` is the build that uses it. If one click ever gives
+two volume steps, raise `steps` to 80; if it takes two clicks per step, lower it to 20.
+
+This target is untested end to end: the module on hand never changed its lines, see "Check
+these before reading logs".
 
 ## Coincell battery board and modules
 
@@ -170,13 +187,16 @@ and drop those two `CONFIG_ZMK_EXT_POWER*` lines.
 | Studio locking (off), other dongle-only Kconfig | `config/halcyon_elora_dongle.conf` |
 | Kconfig shared by all three builds | `config/halcyon_elora.conf` |
 | Build targets and modules | `build.yaml` |
+| Rev 1.0 encoder driver swap and step count | `boards/shields/mod_encoder_rev1_left/` |
 | Physical layout for the keymap editor | `config/halcyon_elora.json` |
 
 Rules that are easy to trip over:
 
 - ZMK applies exactly one overlay from `config/` per build, picked by shield name. A shared
   `halcyon_elora.overlay` would shadow the dongle one. Use per-target overlays only
-  (`halcyon_elora_dongle`, `halcyon_elora_left`, `halcyon_elora_right`).
+  (`halcyon_elora_dongle`, `halcyon_elora_left`, `halcyon_elora_right`). Hardware tweaks tied
+  to one module go into an add-on shield under `boards/shields/` instead, so every left target
+  can share the same config overlay.
 - `.conf` files are merged, so `halcyon_elora.conf` plus `halcyon_elora_<target>.conf` both apply.
 - Encoder scroll amount is `CONFIG_ZMK_POINTING_DEFAULT_SCRL_VAL` (set it in the dongle conf).
 - Touch detection gain is the driver's `sensitivity` property (`1x` most sensitive, splitkb
@@ -185,9 +205,10 @@ Rules that are easy to trip over:
 
 ## Untested knobs
 
-Scroll speed and direction for the touchpad and the encoder were set without hardware. If they
-feel wrong, the comments in `config/halcyon_elora_dongle.overlay` and the Sys/Nav notes above
-point at the single value to change.
+Scroll speed and direction for the touchpad were set without hardware, and the display build has
+not been flashed yet. If scrolling feels wrong, the comments in
+`config/halcyon_elora_dongle.overlay` and the Sys/Nav notes above point at the single value to
+change.
 
 ## Local builds
 

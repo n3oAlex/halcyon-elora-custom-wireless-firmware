@@ -1,6 +1,8 @@
 # This file generates the GitHub Actions matrix.
 # Hardware: Halcyon Elora rev2, wireless controllers + dongle, coincell battery boards,
-# left half: Halcyon Rotary Encoder rev2, right half: Halcyon Cirque Touchpad.
+# left half: Halcyon TFT LCD Display module, right half: Halcyon Cirque Touchpad.
+# The rev 1.0 rotary encoder is kept as an alternative left target (its module never pulled
+# the encoder lines low on any firmware; see README).
 # See README.md for what each artifact is and where to flash it.
 ---
 include:
@@ -10,19 +12,29 @@ include:
     cmake-args: -DCONFIG_ZMK_STUDIO=y
     snippet: studio-rpc-usb-uart
   - board: halcyon_wireless//zmk
-    shield: halcyon_elora_left mod_battery_coincell mod_encoder_left
+    shield: halcyon_elora_left mod_battery_coincell mod_display_tft
     artifact-name: halcyon_elora_left
     cmake-args: -DCONFIG_ZMK_SPLIT_ROLE_CENTRAL=n
   - board: halcyon_wireless//zmk
     shield: halcyon_elora_right mod_battery_coincell mod_cirque_hw_right
     artifact-name: halcyon_elora_right
+  # Alternative left images. E-paper in case the display module is that one; encoder rev 1.0
+  # (mod_encoder_rev1_left must come after mod_encoder_left so its .conf wins).
+  - board: halcyon_wireless//zmk
+    shield: halcyon_elora_left mod_battery_coincell mod_display_epaper_mountain
+    artifact-name: halcyon_elora_left_epaper
+    cmake-args: -DCONFIG_ZMK_SPLIT_ROLE_CENTRAL=n
+  - board: halcyon_wireless//zmk
+    shield: halcyon_elora_left mod_battery_coincell mod_encoder_left mod_encoder_rev1_left
+    artifact-name: halcyon_elora_left_encoder
+    cmake-args: -DCONFIG_ZMK_SPLIT_ROLE_CENTRAL=n
   - board: halcyon_wireless//zmk
     shield: settings_reset
     artifact-name: settings_reset_controller
   - board: halcyon_dongle//zmk
     shield: settings_reset
     artifact-name: settings_reset_dongle
-  # Diagnosis builds: identical to the three above plus USB logging (zmk-usb-logging snippet
+  # Diagnosis builds: identical to the ones above plus USB logging (zmk-usb-logging snippet
   # adds the CDC-ACM serial device) at debug level. Dongle variant drops ZMK Studio because
   # both want the USB CDC port. Flash the normal images afterwards.
   - board: halcyon_dongle//zmk
@@ -31,8 +43,13 @@ include:
     snippet: zmk-usb-logging
     cmake-args: -DCONFIG_ZMK_LOG_LEVEL_DBG=y -DCONFIG_SENSOR_LOG_LEVEL_DBG=y -DCONFIG_INPUT_LOG_LEVEL_DBG=y
   - board: halcyon_wireless//zmk
-    shield: halcyon_elora_left mod_battery_coincell mod_encoder_left
+    shield: halcyon_elora_left mod_battery_coincell mod_display_tft
     artifact-name: debug_halcyon_elora_left
+    snippet: zmk-usb-logging
+    cmake-args: -DCONFIG_ZMK_SPLIT_ROLE_CENTRAL=n -DCONFIG_ZMK_LOG_LEVEL_DBG=y -DCONFIG_DISPLAY_LOG_LEVEL_DBG=y
+  - board: halcyon_wireless//zmk
+    shield: halcyon_elora_left mod_battery_coincell mod_encoder_left mod_encoder_rev1_left
+    artifact-name: debug_halcyon_elora_left_encoder
     snippet: zmk-usb-logging
     cmake-args: -DCONFIG_ZMK_SPLIT_ROLE_CENTRAL=n -DCONFIG_ZMK_LOG_LEVEL_DBG=y -DCONFIG_SENSOR_LOG_LEVEL_DBG=y -DCONFIG_INPUT_LOG_LEVEL_DBG=y -DCONFIG_EC11_CLASSIC_DEBUG_POLL=y
   - board: halcyon_wireless//zmk

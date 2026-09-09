@@ -119,3 +119,15 @@ cmake+kconfig), left overlay re-types node, steps=40, left conf disables fork EC
   on change + 2 s heartbeat. Lines change while turning but no EC11C interrupt lines => firmware.
   Lines stuck at 1/1 while turning => hardware (encoder common not reaching GND after first click,
   cable/connector).
+
+## Poll result (user, 2026-09-09 22:26, logs/left-20260909-222645.log): HARDWARE
+- 29 poll lines, every one A=1 B=1, no "(changed)", no EC11C interrupt lines, keys 36/39 fine,
+  no position 62. Init read 11 this boot (earlier boots read 00 then one half-click: a flaky
+  common/ground contact fits). Lines never pulled low => encoder common not reaching GND:
+  module, flat cable or VIK connector. Stock firmware showed the same. No firmware path forward.
+- User decision: install the Display module rev 1.0 on the left instead. Assumed = Halcyon TFT
+  LCD Display Module (mod_display_tft, ST7789 135x240); e-paper target built as fallback.
+- Repo change: left target -> mod_display_tft; rev 1.0 encoder support moved into add-on shield
+  boards/shields/mod_encoder_rev1_left (overlay + conf) with its own targets
+  halcyon_elora_left_encoder / debug_halcyon_elora_left_encoder. config/halcyon_elora_left.overlay
+  removed (its only content moved). Open: display on peripheral untested; coincell drain with TFT.
