@@ -7,7 +7,7 @@ ZMK config for one specific keyboard:
 | Keyboard | Halcyon Elora rev2 |
 | Controllers | Halcyon Wireless, both halves, plus Halcyon Dongle |
 | Battery boards | Coincell (`mod_battery_coincell`) |
-| Left half module | Halcyon TFT LCD Display (`mod_display_tft`). The rev 1.0 Rotary Encoder is a spare target, see below |
+| Left half module | None on the coincell board. TFT display, e-paper and rev 1.0 encoder exist as spare targets, see below |
 | Right half module | Halcyon Cirque Touchpad (`mod_cirque_hw_right`) |
 | Host | macOS, dongle on USB |
 
@@ -42,9 +42,10 @@ a half in only charges it and, with a debug build, exposes its log.
 | Artifact | Flash to |
 | :--- | :--- |
 | `halcyon_elora_dongle` | Dongle. ZMK Studio enabled, no unlock needed. |
-| `halcyon_elora_left` | Left half (TFT display). |
-| `halcyon_elora_left_epaper` | Left half if the display module turns out to be the e-paper one (mountain image). |
-| `halcyon_elora_left_encoder` | Left half with the rev 1.0 encoder module instead of a display. |
+| `halcyon_elora_left` | Left half, no module. |
+| `halcyon_elora_left_tft` | Left half with the TFT display. Needs the LiPo board, see below. |
+| `halcyon_elora_left_epaper` | Left half with the e-paper display (mountain image). |
+| `halcyon_elora_left_encoder` | Left half with the rev 1.0 encoder module. |
 | `halcyon_elora_right` | Right half (touchpad). |
 | `settings_reset_controller` | A half that refuses to pair. Flash, wait 5 s, then flash its normal image again. |
 | `settings_reset_dongle` | Same for the dongle. |
@@ -76,7 +77,7 @@ ports with `--list`.
 
 What to look for:
 
-- Left half with the display (`debug_halcyon_elora_left`): `display` or `st7789v` lines at boot;
+- Left half with the display (`debug_halcyon_elora_left_tft`): `display` or `st7789v` lines at boot;
   an error code there means the SPI device did not answer.
 - Left half with the encoder (`debug_halcyon_elora_left_encoder`): `EC11C` lines when the
   encoder turns, and a `kscan` / position event for position 62 when its button is pressed. This
@@ -143,15 +144,22 @@ Rev2-specific keys:
 
 ## Display module on the left half
 
-`halcyon_elora_left` builds splitkb's `mod_display_tft` shield (1.14" ST7789, 135x240). The left
-half is a split peripheral, so the display shows what ZMK's peripheral status screen offers:
+**Shelved until the LiPo board arrives.** On the coincell the TFT build lit the backlight dimly
+for a moment per key press, drew nothing, and the half stopped delivering keys to the dongle. A
+CR2032 sags under the TFT's load (backlight plus controller, tens of milliamperes against the
+cell's internal resistance), which browns the nRF52 out and keeps it rebooting. That matches all
+three symptoms; a quick confirmation is to plug the half into USB with the TFT image, where it
+should work. `halcyon_elora_left` therefore carries no module for now.
+
+`halcyon_elora_left_tft` builds splitkb's `mod_display_tft` shield (1.14" ST7789, 135x240). The
+left half is a split peripheral, so the display shows what ZMK's peripheral status screen offers:
 its own battery and whether it is connected. Layer, lock and right-half battery state live on
 the central (the dongle), and neither ZMK nor splitkb's fork sends any of it back to a
 peripheral: the only central-to-peripheral messages are behavior invocations, the physical
 layout index and HID lock indicators. Showing dongle-side status on this screen would mean
 custom split code on both ends.
 
-Power, TFT build only (`cmake-args` in `build.yaml`):
+Power, TFT target only (`cmake-args` in `build.yaml`):
 
 - splitkb's TFT shield never blanks. This config turns `CONFIG_ZMK_DISPLAY_BLANK_ON_IDLE` on and
   sets `CONFIG_ZMK_IDLE_TIMEOUT` to 5 s, so the panel and backlight switch off 5 s after the last
@@ -163,10 +171,10 @@ Power, TFT build only (`cmake-args` in `build.yaml`):
   fraction of a milliampere); cutting the VIK rail would kill the touchpad on the right too.
 - Deep sleep after 15 min of idle already cuts the module rail.
 
-Expect the coincell to drain faster than with a passive module regardless; the LiPo board fixes
-that. `halcyon_elora_left_epaper` is the same build with `mod_display_epaper_mountain` for the
-e-paper module (the other images are `forest` and `cityscape`, swap the shield name in
-`build.yaml`); e-paper must not blank, which is why the idle settings are per target.
+`halcyon_elora_left_epaper` is the same build with `mod_display_epaper_mountain` for the e-paper
+module (the other images are `forest` and `cityscape`, swap the shield name in `build.yaml`);
+e-paper must not blank, which is why the idle settings are per target. The `DISP` key and the
+`dispoff` behavior stay in the keymap for all targets; without a display they do nothing.
 
 ## Encoder module rev 1.0 (spare target)
 
@@ -190,9 +198,11 @@ these before reading logs".
 On the coincell board the VIK module rail is behind ZMK's "external power" switch, and splitkb's
 coincell shield (since 2026-09-08) refuses to enable external power while USB is disconnected.
 Result: modules work on a cable and die on battery. `config/halcyon_elora_left.conf` and
-`_right.conf` override that and start with external power on; the orange LED stays lit as the
-indicator splitkb wired for it. With the LiPo board, switch `build.yaml` to `mod_battery_lipo`
-and drop those two `CONFIG_ZMK_EXT_POWER*` lines.
+`_right.conf` override that and start with external power on. splitkb wired the orange LED into
+the same switch as an indicator, so it would burn continuously; `config/coincell_ext_power.dtsi`
+(included by both half overlays) takes the LED back out and drives only the rail. With the LiPo
+board, switch `build.yaml` to `mod_battery_lipo` and drop the two `CONFIG_ZMK_EXT_POWER*` lines
+plus the two half overlays.
 
 ## Where each tweak lives
 
@@ -205,6 +215,7 @@ and drop those two `CONFIG_ZMK_EXT_POWER*` lines.
 | Build targets and modules | `build.yaml` |
 | Rev 1.0 encoder driver swap and step count | `boards/shields/mod_encoder_rev1_left/` |
 | Display idle timeout and blanking (TFT targets) | `build.yaml`, `cmake-args` |
+| Orange LED off while external power stays on (coincell) | `config/coincell_ext_power.dtsi` |
 | Display off key behavior | `drivers/behavior/display_toggle/` |
 | Physical layout for the keymap editor | `config/halcyon_elora.json` |
 

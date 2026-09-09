@@ -1,0 +1,10 @@
+/*
+ * Coincell battery board, both halves. splitkb's shield drives the orange LED together with the
+ * module rail as an "external power is on" indicator. This config keeps external power on all
+ * the time (see halcyon_elora_left.conf / _right.conf), so the LED would burn continuously.
+ * Drive the rail only. Not needed with the LiPo board; delete with the .conf overrides.
+ */
+
+&{/EXT_POWER} {
+    control-gpios = <&halcyon_conn 32 GPIO_ACTIVE_HIGH>;
+};

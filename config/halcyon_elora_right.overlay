@@ -1,0 +1,3 @@
+/* Right-half devicetree tweaks. ZMK applies exactly one overlay from config/ per build. */
+
+#include "coincell_ext_power.dtsi"

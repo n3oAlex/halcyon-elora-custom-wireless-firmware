@@ -131,3 +131,12 @@ cmake+kconfig), left overlay re-types node, steps=40, left conf disables fork EC
   boards/shields/mod_encoder_rev1_left (overlay + conf) with its own targets
   halcyon_elora_left_encoder / debug_halcyon_elora_left_encoder. config/halcyon_elora_left.overlay
   removed (its only content moved). Open: display on peripheral untested; coincell drain with TFT.
+
+## Sixth report (user, 2026-09-09): TFT dead on coincell, orange LEDs
+- TFT: backlight dim/brief per key press, nothing drawn, left half delivers no keys. Reads as
+  CR2032 brownout under TFT load (reboot loop). Not verified (no log, no USB test). User chose to
+  drop the left module: halcyon_elora_left = no module; _tft/_epaper/_encoder kept as alternates
+  for the LiPo board. dispoff behavior stays (no-op without display).
+- Orange LEDs: coincell overlay puts P0.31 (orange LED) into EXT_POWER control-gpios next to the
+  rail pin halcyon_conn 32. Fix: config/coincell_ext_power.dtsi overrides control-gpios to the
+  rail only, included from halcyon_elora_left.overlay and _right.overlay.
