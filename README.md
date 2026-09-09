@@ -144,12 +144,12 @@ Rev2-specific keys:
 
 ## Display module on the left half
 
-**Shelved until the LiPo board arrives.** On the coincell the TFT build lit the backlight dimly
-for a moment per key press, drew nothing, and the half stopped delivering keys to the dongle. A
-CR2032 sags under the TFT's load (backlight plus controller, tens of milliamperes against the
-cell's internal resistance), which browns the nRF52 out and keeps it rebooting. That matches all
-three symptoms; a quick confirmation is to plug the half into USB with the TFT image, where it
-should work. `halcyon_elora_left` therefore carries no module for now.
+**Shelved, cause not found.** The TFT build lit the backlight briefly per key press, drew
+nothing, and the half stopped delivering keys to the dongle. The same happens on USB (brighter
+backlight, still no keys, still blank), so it is not the coincell sagging under load. Something
+in that build takes the whole half down; the next step is a `debug_halcyon_elora_left_tft`
+capture (boot lines up to the first `display` / `st7789v` message, and whether `split` ever
+reports a connection). `halcyon_elora_left` carries no module until then.
 
 `halcyon_elora_left_tft` builds splitkb's `mod_display_tft` shield (1.14" ST7789, 135x240). The
 left half is a split peripheral, so the display shows what ZMK's peripheral status screen offers:

@@ -140,3 +140,14 @@ cmake+kconfig), left overlay re-types node, steps=40, left conf disables fork EC
 - Orange LEDs: coincell overlay puts P0.31 (orange LED) into EXT_POWER control-gpios next to the
   rail pin halcyon_conn 32. Fix: config/coincell_ext_power.dtsi overrides control-gpios to the
   rail only, included from halcyon_elora_left.overlay and _right.overlay.
+
+## Wrap-up 2026-09-10
+- Dead keys on the TFT build were a lost pairing (left was reset alone); settings_reset on all
+  three parts fixed it. Brownout theory withdrawn (same on USB).
+- TFT with keys working: backlight follows supply (dim on cell, bright on USB), panel blank.
+  SPI is write-only so the driver cannot notice a missing panel. Suspect the left half's VIK
+  flat-cable connector (encoder rev 1.0 lines never moved on the same connector). User suspects
+  a damaged board-side contact. Decision: leave halcyon_elora_left without a module; re-test the
+  left VIK path when the e-paper arrives (same SPI bus, same CS/DC/RESET lines). If blank again,
+  build a right-half display target to isolate module vs connector.
+- Open: LiPo board -> mod_battery_lipo, drop EXT_POWER conf lines + both half overlays.
