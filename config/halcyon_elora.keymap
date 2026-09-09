@@ -24,7 +24,6 @@
 #define CMD  3
 #define GAME 4
 #define SYS  5
-#define SCROLL 6
 
 &mt {
     tapping-term-ms = <175>;
@@ -97,14 +96,14 @@
 // |  TAB  |  Q  |  W  |  E  |  R  |  T  |                                    |  Y  |  U  |  I  |  O  |  P  |  [   |
 // | SHFT  |  A  |  S  |  D  |  F  |  G  |                                    |  H  |  J  |  K  |  L  |  ;  |SFT/' |
 // |CTL/TAB|  Z  |  X  |  C  |  V  |  B  | PREV | NEXT |        | LCLK | RCLK |  N  |  M  |  ,  |GUI/.|ALT//|CTL/RET|
-//                 | SYS* | NUM | MEH/TAB | ALT | GUI/RET |    | SCRL/BSPC | NAV/SPC | ALT/DEL | NUM | SYS* |
+//                 | SYS* | NUM | MEH/TAB | ALT | GUI/RET |    | HYP/BSPC | NAV/SPC | ALT/DEL | NUM | SYS* |
 // halcyon row:    | PLAY |     |     |     |     |                        |     |     |     |     |     |
             bindings = <
 &kp ESC      &kp N1 &kp N2 &kp N3 &kp N4 &kp N5                                                                 &kp N6 &kp N7 &kp N8    &kp N9      &kp N0       &kp MINUS
 &kp TAB      &kp Q  &kp W  &kp E  &kp R  &kp T                                                                  &kp Y  &kp U  &kp I     &kp O       &kp P        &kp LBKT
 &kp LSHFT    &kp A  &kp S  &kp D  &kp F  &kp G                                                                  &kp H  &kp J  &kp K     &kp L       &kp SEMI     &mt RSHFT SQT
 &mt LCTRL TAB &kp Z &kp X  &kp C  &kp V  &kp B  &kp C_PREV &kp C_NEXT                   &mkp LCLK &mkp RCLK    &kp N  &kp M  &kp COMMA &mt RGUI DOT &mt RALT FSLH &mt RCTRL RET
-                    &none  &mo NUM &mt LS(LC(LALT)) TAB &kp LALT &mt LGUI RET           &lt SCROLL BSPC &lt NAV SPACE &mt RALT DEL &mo NUM &none
+                    &none  &mo NUM &mt LS(LC(LALT)) TAB &kp LALT &mt LGUI RET           &mt LS(LC(LA(LGUI))) BSPC &lt NAV SPACE &mt RALT DEL &mo NUM &none
 
 &kp C_PP &none &none &none &none                                                                                                  &none &none &none &none &none
             >;
@@ -196,22 +195,6 @@
                                       &trans       &trans       &trans       &trans &trans              &trans &trans     &trans          &trans          &trans
 
 &trans &trans &trans &trans &trans                                                                                                                         &trans &trans &trans &trans &trans
-            >;
-            sensor-bindings = <&inc_dec_kp C_VOL_UP C_VOL_DN &inc_dec_kp C_VOL_UP C_VOL_DN &inc_dec_kp C_VOL_UP C_VOL_DN &inc_dec_kp C_VOL_UP C_VOL_DN>;
-        };
-
-        scroll_layer {
-            display-name = "Scroll";
-// Held via Backspace. Exists only so the dongle's touchpad listener can switch to scroll mode
-// (config/halcyon_elora_dongle.overlay). Keys stay transparent.
-            bindings = <
-&trans &trans &trans &trans &trans &trans                                                          &trans &trans &trans &trans &trans &trans
-&trans &trans &trans &trans &trans &trans                                                          &trans &trans &trans &trans &trans &trans
-&trans &trans &trans &trans &trans &trans                                                          &trans &trans &trans &trans &trans &trans
-&trans &trans &trans &trans &trans &trans &trans &trans                          &trans &trans     &trans &trans &trans &trans &trans &trans
-                     &trans &trans &trans &trans &trans                          &trans &trans     &trans &trans &trans
-
-&trans &trans &trans &trans &trans                                                                                                       &trans &trans &trans &trans &trans
             >;
             sensor-bindings = <&inc_dec_kp C_VOL_UP C_VOL_DN &inc_dec_kp C_VOL_UP C_VOL_DN &inc_dec_kp C_VOL_UP C_VOL_DN &inc_dec_kp C_VOL_UP C_VOL_DN>;
         };

@@ -11,26 +11,26 @@
 
 #include <input/processors.dtsi>
 
-#define NAV    1
-#define SCROLL 6
+#define NAV 1
+#define NUM 2
 
 &trackpad_listener {
     /* Cursor speed: pointer deltas times MUL/DIV. 3 1 = three times raw. */
     input-processors = <&zip_xy_scaler 3 1>;
 
-    /* Precision mode while NAV (Space) is held: raw 1:1 deltas. Only the first matching
-     * child applies, so the base scaler above is skipped here. */
+    /* Precision mode while NUM (second left thumb key) is held: raw 1:1 deltas. Only the
+     * first matching child applies, so the base scaler above is skipped here. */
     precision {
-        layers = <NAV>;
+        layers = <NUM>;
         input-processors = <&zip_xy_scaler 1 1>;
     };
 
-    /* Scroll mode while SCROLL (Backspace) is held: finger movement becomes wheel events
+    /* Scroll mode while NAV (Space) is held: finger movement becomes wheel events
      * at a third of raw speed. Too fast or too slow: change 1 3.
      * Wrong direction: prepend <&zip_xy_transform (INPUT_TRANSFORM_Y_INVERT)> and
      * #include <dt-bindings/zmk/input_transform.h> at the top. */
     scroller {
-        layers = <SCROLL>;
+        layers = <NAV>;
         input-processors = <&zip_xy_scaler 1 3>, <&zip_xy_to_scroll_mapper>;
     };
 };

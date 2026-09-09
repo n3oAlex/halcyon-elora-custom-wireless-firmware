@@ -24,8 +24,18 @@ whether the stock splitkb firmware behaves the same.
 - Touchpad works while the right half is on a USB cable; dies on battery. Right-half keys keep working.
 - Encoder: 2/10 cable reconnects give exactly one volume step, then nothing.
 
-## Hypotheses, in order
-1. Right half VIK voltage selector on 5V instead of NC. splitkb Cirque wireless guide: "Set the VIK
+## Third report (user, 2026-09-09)
+- Right half VIK selector confirmed on NC. Stock firmware from splitkb.com/fw worked with the Cirque
+  wirelessly (date of that stock download unknown: before or after module commit 2054c04?).
+- Encoder ribbon cable replaced with a new longer one: no change.
+- First debug-build attempt failed: CONFIG_ZMK_USB_LOGGING alone lacks the CDC-ACM DT node; switched to
+  the zmk-usb-logging snippet.
+
+## Hypotheses, in order (revised)
+0. Since stock worked wirelessly and hardware checks are done: fault is in this config OR in the
+   2026-09-08 module/fork commits that today's stock also carries. Bisect: re-download stock today
+   and test; then if stock still works, diff is our keymap/overlay/conf only.
+1. (was #1) Right half VIK voltage selector on 5V instead of NC. RULED OUT by user. splitkb Cirque wireless guide: "Set the VIK
    voltage selector to NC". Encoder guide: "can be on either 5V or NC". 5V = VBUS only, so the module
    rail exists only on cable. Matches the touchpad symptom exactly. User can check without tools.
 2. Encoder line B (vik_conn 3 = halcyon_conn 18 = P0.04, "AD_1") not reaching the MCU. Fork commit

@@ -111,16 +111,15 @@ Ported 1:1 from a Vial/QMK Elora rev1 layout.
 | 3 | Cmd | on Nav, hold the cut/copy key (`;` position) |
 | 4 | Game | toggle with combo Esc + Minus |
 | 5 | Sys | hold both outermost thumb-row keys |
-| 6 | Scroll | hold right thumb Backspace (keys stay transparent; only switches the touchpad to scroll) |
 
 Rev2-specific keys:
 
 - Encoder: volume; press is play/pause. On Nav: scroll; press is mute.
 - Left inner row-3 keys: previous / next track.
 - Right inner row-3 keys (under the touchpad): left click / right click. Tap-to-click is also on.
-- Touchpad modes: normal cursor at 3x, precision (raw 1:1) while Space is held, scroll while
-  Backspace is held. Backspace used to be a Hyper mod-tap; Hyper as a held modifier is gone,
-  the explicit Hyper+digit keys on Nav remain.
+- Touchpad modes: normal cursor at 3x, scroll while Space (Nav) is held, precision (raw 1:1)
+  while the NUM thumb key is held. Scrolling cannot share the Hyper key: macOS reads Cmd+wheel
+  as zoom and Shift+wheel as horizontal scroll.
 - The Game layer had three inner-column keys per side on rev1 and two on rev2. `L` (left) and
   `RALT` (right) were dropped; reassign them in the editor if you use them.
 
