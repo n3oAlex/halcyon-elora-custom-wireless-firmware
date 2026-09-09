@@ -1,0 +1,1 @@
+add_subdirectory_ifdef(CONFIG_EC11_CLASSIC sensor/ec11_classic)

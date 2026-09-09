@@ -1,0 +1,18 @@
+/*
+ * Left-half devicetree tweaks. ZMK applies exactly one overlay from config/ per build, so keep
+ * this file left-specific (see README).
+ *
+ * The installed encoder module is revision 1.0 (ALPS EC12): same VIK pins as rev 2 (A on AD_1,
+ * B on AD_2, button on SDA per splitkb's QMK userspace hlc_encoder/config.h), but two quadrature
+ * edges per click instead of four. splitkb's ZMK fork replaced the EC11 driver with one that arms
+ * only one line at a time; on this module it stops after the first click (seen in the debug log).
+ * Use the vendored upstream two-line driver in drivers/sensor/ec11_classic instead.
+ */
+
+&left_halcyon_encoder {
+    compatible = "halcyon,ec11-classic";
+    /* Pulses (edges) per full rotation. rev 1.0 has 2 per click; with the keyboard's
+     * triggers-per-rotation of 20, 40 makes one click = one trigger. If one click gives two
+     * volume steps, raise to 80; if it takes two clicks per step, lower to 20. */
+    steps = <40>;
+};

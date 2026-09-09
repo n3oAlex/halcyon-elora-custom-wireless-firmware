@@ -7,7 +7,7 @@ ZMK config for one specific keyboard:
 | Keyboard | Halcyon Elora rev2 |
 | Controllers | Halcyon Wireless, both halves, plus Halcyon Dongle |
 | Battery boards | Coincell (`mod_battery_coincell`) |
-| Left half module | Halcyon Rotary Encoder rev2 (`mod_encoder_left`) |
+| Left half module | Halcyon Rotary Encoder **rev 1.0** (`mod_encoder_left` shield, own driver, see below) |
 | Right half module | Halcyon Cirque Touchpad (`mod_cirque_hw_right`) |
 | Host | macOS, dongle on USB |
 
@@ -29,6 +29,12 @@ normal idle current until it is reset
 and the [splitkb firmware guide](https://docs.splitkb.com/product-guides/halcyon-series/build-guide/wireless/firmware)
 says the same). Flashing alone does not reset the chip. The dongle is USB powered, so it does
 not matter there, but resetting it does no harm.
+
+On macOS Sonoma and later, Finder reports **error -36** at the end of every UF2 copy. Ignore it.
+The controller resets itself the moment the last block arrives, before Finder gets its
+acknowledgement, so the flash is already done ([ZMK: flashing issues](https://zmk.dev/docs/troubleshooting/flashing-issues)).
+A flash that really failed leaves the `HALCYON` drive mounted, or the part comes back into the
+bootloader by itself.
 
 The halves send nothing to the computer over USB; the dongle is the only HID device. Plugging
 a half in only charges it and, with a debug build, exposes its log.
@@ -128,6 +134,29 @@ Rev2-specific keys:
   as zoom and Shift+wheel as horizontal scroll.
 - The Game layer had three inner-column keys per side on rev1 and two on rev2. `L` (left) and
   `RALT` (right) were dropped; reassign them in the editor if you use them.
+
+## Encoder module rev 1.0
+
+splitkb's ZMK module only knows the rev 2 encoder. Rev 1.0 uses the same VIK pins (A on AD_1, B
+on AD_2, push button on SDA, per splitkb's QMK userspace) but an ALPS EC12 that yields two
+quadrature edges per click instead of four. splitkb's ZMK fork replaced the stock EC11 driver
+with one that arms an interrupt on only one encoder line at a time; on this module it delivers
+one click and then goes silent (seen in the debug log). This repo therefore ships upstream ZMK's
+original two-line driver under `drivers/sensor/ec11_classic` (compatible
+`halcyon,ec11-classic`), and `config/halcyon_elora_left.overlay` re-types the left encoder node
+to it with `steps = <40>` (2 edges times 20 clicks per turn). If one click ever gives two volume
+steps, raise `steps` to 80; if it takes two clicks per step, lower it to 20. When a rev 2 module
+arrives, delete that overlay block and the four `CONFIG_EC11*` lines in
+`config/halcyon_elora_left.conf`.
+
+## Coincell battery board and modules
+
+On the coincell board the VIK module rail is behind ZMK's "external power" switch, and splitkb's
+coincell shield (since 2026-09-08) refuses to enable external power while USB is disconnected.
+Result: modules work on a cable and die on battery. `config/halcyon_elora_left.conf` and
+`_right.conf` override that and start with external power on; the orange LED stays lit as the
+indicator splitkb wired for it. With the LiPo board, switch `build.yaml` to `mod_battery_lipo`
+and drop those two `CONFIG_ZMK_EXT_POWER*` lines.
 
 ## Where each tweak lives
 

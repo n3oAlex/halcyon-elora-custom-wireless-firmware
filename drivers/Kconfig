@@ -1,0 +1,5 @@
+if SENSOR
+
+rsource "sensor/ec11_classic/Kconfig"
+
+endif # SENSOR

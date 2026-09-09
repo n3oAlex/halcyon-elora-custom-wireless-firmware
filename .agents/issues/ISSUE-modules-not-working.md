@@ -97,3 +97,10 @@ EXT_POWER_START=y. If modules work on battery afterwards: VIK rail depends on EX
 09-08 coincell change broke modules for coincell users -> report to splitkb, keep override (maybe
 drop the orange LED from EXT_POWER control-gpios in our overlay to save battery).
 If not: voltage/hardware on battery (Pinnacle undervolt would not explain a passive encoder, though).
+
+## RESOLVED (touchpad) 2026-09-09: EXT_POWER override -> touchpad works on battery. Orange LEDs on.
+## Encoder: module is rev 1.0 (ALPS EC12, 2 edges/click). QMK userspace hlc_encoder/config.h: A=GP27
+(AD_1), B=GP26 (AD_2), button GP16 (SDA); rev2 only changes ENCODER_RESOLUTION 2->4. Same pins as
+ZMK mod_encoder (A/B swapped = direction only). Fork EC11 one-active-pin driver stops after first
+click. Fix: vendored upstream two-line driver as halcyon,ec11-classic (drivers/, dts/, module.yml
+cmake+kconfig), left overlay re-types node, steps=40, left conf disables fork EC11.
