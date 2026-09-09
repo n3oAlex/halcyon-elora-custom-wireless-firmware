@@ -22,3 +22,17 @@ include:
   - board: halcyon_dongle//zmk
     shield: settings_reset
     artifact-name: settings_reset_dongle
+  # Diagnosis builds: identical to the three above plus USB logging. Dongle variant drops
+  # ZMK Studio because both want the USB CDC port. Flash the normal images afterwards.
+  - board: halcyon_dongle//zmk
+    shield: halcyon_elora_dongle mod_cirque_central
+    artifact-name: debug_halcyon_elora_dongle
+    cmake-args: -DCONFIG_ZMK_USB_LOGGING=y -DCONFIG_ZMK_LOG_LEVEL_DBG=y -DCONFIG_SENSOR_LOG_LEVEL_DBG=y -DCONFIG_INPUT_LOG_LEVEL_DBG=y
+  - board: halcyon_wireless//zmk
+    shield: halcyon_elora_left mod_battery_coincell mod_encoder_left
+    artifact-name: debug_halcyon_elora_left
+    cmake-args: -DCONFIG_ZMK_SPLIT_ROLE_CENTRAL=n -DCONFIG_ZMK_USB_LOGGING=y -DCONFIG_ZMK_LOG_LEVEL_DBG=y -DCONFIG_SENSOR_LOG_LEVEL_DBG=y -DCONFIG_INPUT_LOG_LEVEL_DBG=y
+  - board: halcyon_wireless//zmk
+    shield: halcyon_elora_right mod_battery_coincell mod_cirque_hw_right
+    artifact-name: debug_halcyon_elora_right
+    cmake-args: -DCONFIG_ZMK_USB_LOGGING=y -DCONFIG_ZMK_LOG_LEVEL_DBG=y -DCONFIG_SENSOR_LOG_LEVEL_DBG=y -DCONFIG_INPUT_LOG_LEVEL_DBG=y
