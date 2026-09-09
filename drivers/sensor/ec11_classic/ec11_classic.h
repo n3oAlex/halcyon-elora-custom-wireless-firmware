@@ -24,7 +24,7 @@ struct ec11c_data {
     int8_t ticks;
     int8_t delta;
 
-#ifdef CONFIG_EC11_TRIGGER
+#ifdef CONFIG_EC11_CLASSIC_TRIGGER
     struct gpio_callback a_gpio_cb;
     struct gpio_callback b_gpio_cb;
     const struct device *dev;
@@ -32,18 +32,18 @@ struct ec11c_data {
     sensor_trigger_handler_t handler;
     const struct sensor_trigger *trigger;
 
-#if defined(CONFIG_EC11_TRIGGER_OWN_THREAD)
-    K_KERNEL_STACK_MEMBER(thread_stack, CONFIG_EC11_THREAD_STACK_SIZE);
+#if defined(CONFIG_EC11_CLASSIC_TRIGGER_OWN_THREAD)
+    K_KERNEL_STACK_MEMBER(thread_stack, CONFIG_EC11_CLASSIC_THREAD_STACK_SIZE);
     struct k_sem gpio_sem;
     struct k_thread thread;
-#elif defined(CONFIG_EC11_TRIGGER_GLOBAL_THREAD)
+#elif defined(CONFIG_EC11_CLASSIC_TRIGGER_GLOBAL_THREAD)
     struct k_work work;
 #endif
 
-#endif /* CONFIG_EC11_TRIGGER */
+#endif /* CONFIG_EC11_CLASSIC_TRIGGER */
 };
 
-#ifdef CONFIG_EC11_TRIGGER
+#ifdef CONFIG_EC11_CLASSIC_TRIGGER
 
 int ec11c_trigger_set(const struct device *dev, const struct sensor_trigger *trig,
                      sensor_trigger_handler_t handler);

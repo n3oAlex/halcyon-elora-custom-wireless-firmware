@@ -41,9 +41,9 @@ static void ec11c_a_gpio_callback(const struct device *dev, struct gpio_callback
 
     setup_int(drv_data->dev, false);
 
-#if defined(CONFIG_EC11_TRIGGER_OWN_THREAD)
+#if defined(CONFIG_EC11_CLASSIC_TRIGGER_OWN_THREAD)
     k_sem_give(&drv_data->gpio_sem);
-#elif defined(CONFIG_EC11_TRIGGER_GLOBAL_THREAD)
+#elif defined(CONFIG_EC11_CLASSIC_TRIGGER_GLOBAL_THREAD)
     k_work_submit(&drv_data->work);
 #endif
 }
@@ -56,9 +56,9 @@ static void ec11c_b_gpio_callback(const struct device *dev, struct gpio_callback
 
     setup_int(drv_data->dev, false);
 
-#if defined(CONFIG_EC11_TRIGGER_OWN_THREAD)
+#if defined(CONFIG_EC11_CLASSIC_TRIGGER_OWN_THREAD)
     k_sem_give(&drv_data->gpio_sem);
-#elif defined(CONFIG_EC11_TRIGGER_GLOBAL_THREAD)
+#elif defined(CONFIG_EC11_CLASSIC_TRIGGER_GLOBAL_THREAD)
     k_work_submit(&drv_data->work);
 #endif
 }
@@ -71,7 +71,7 @@ static void ec11c_thread_cb(const struct device *dev) {
     setup_int(dev, true);
 }
 
-#ifdef CONFIG_EC11_TRIGGER_OWN_THREAD
+#ifdef CONFIG_EC11_CLASSIC_TRIGGER_OWN_THREAD
 static void ec11c_thread(int dev_ptr, int unused) {
     const struct device *dev = INT_TO_POINTER(dev_ptr);
     struct ec11c_data *drv_data = dev->data;
@@ -85,7 +85,7 @@ static void ec11c_thread(int dev_ptr, int unused) {
 }
 #endif
 
-#ifdef CONFIG_EC11_TRIGGER_GLOBAL_THREAD
+#ifdef CONFIG_EC11_CLASSIC_TRIGGER_GLOBAL_THREAD
 static void ec11c_work_cb(struct k_work *work) {
     struct ec11c_data *drv_data = CONTAINER_OF(work, struct ec11c_data, work);
 
@@ -132,13 +132,13 @@ int ec11c_init_interrupt(const struct device *dev) {
         return -EIO;
     }
 
-#if defined(CONFIG_EC11_TRIGGER_OWN_THREAD)
+#if defined(CONFIG_EC11_CLASSIC_TRIGGER_OWN_THREAD)
     k_sem_init(&drv_data->gpio_sem, 0, UINT_MAX);
 
-    k_thread_create(&drv_data->thread, drv_data->thread_stack, CONFIG_EC11_THREAD_STACK_SIZE,
+    k_thread_create(&drv_data->thread, drv_data->thread_stack, CONFIG_EC11_CLASSIC_THREAD_STACK_SIZE,
                     (k_thread_entry_t)ec11c_thread, dev, 0, NULL,
-                    K_PRIO_COOP(CONFIG_EC11_THREAD_PRIORITY), 0, K_NO_WAIT);
-#elif defined(CONFIG_EC11_TRIGGER_GLOBAL_THREAD)
+                    K_PRIO_COOP(CONFIG_EC11_CLASSIC_THREAD_PRIORITY), 0, K_NO_WAIT);
+#elif defined(CONFIG_EC11_CLASSIC_TRIGGER_GLOBAL_THREAD)
     k_work_init(&drv_data->work, ec11c_work_cb);
 #endif
 

@@ -101,7 +101,7 @@ static int ec11c_channel_get(const struct device *dev, enum sensor_channel chan,
 }
 
 static const struct sensor_driver_api ec11c_driver_api = {
-#ifdef CONFIG_EC11_TRIGGER
+#ifdef CONFIG_EC11_CLASSIC_TRIGGER
     .trigger_set = ec11c_trigger_set,
 #endif
     .sample_fetch = ec11c_sample_fetch,
@@ -135,7 +135,7 @@ int ec11c_init(const struct device *dev) {
         return -EIO;
     }
 
-#ifdef CONFIG_EC11_TRIGGER
+#ifdef CONFIG_EC11_CLASSIC_TRIGGER
     if (ec11c_init_interrupt(dev) < 0) {
         LOG_DBG("Failed to initialize interrupt!");
         return -EIO;
